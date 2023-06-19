@@ -37,10 +37,10 @@ namespace CalendarsIntegrator.Dependencies.Concretes
             try
             {
 
-                string sql = @"SELECT PAP.IDProtocollo, PAP.DataInizio, PAP.DataFine, PAP.Subject, PAP.Note, replace(P.EMail, '-x#x-', '@') EMail
-                                FROM TABPersonaleAttivitaProspetto PAP
-                                INNER JOIN TABPersonale P ON PAP.IDPersonale = P.IDTecnico
-                                WHERE PAP.IDCommessa = '900X'";
+                string sql = @"SELECT PAP.IDProtocollo, PAP.DataInizio, PAP.DataFine, PAP.Subject, PAP.Note, REPLACE (P.EMail, '-x#x-', '@') AS EMail
+                    FROM TABPersonaleAttivitaProspetto PAP
+                    INNER JOIN TABPersonale P ON PAP.IDPersonale = P.IDTecnico
+                    WHERE PAP.IDCommessa = '900X'";
 
                 if (email?.Count() > 0)
                 {
@@ -57,7 +57,8 @@ namespace CalendarsIntegrator.Dependencies.Concretes
                     }
 
                     var emailFilter = (from e in emailList select "'" + e.Replace("-x#x-", "@") + "'");
-                    sql += $" AND Email IN ({string.Join(", ", emailFilter)})";
+                    //sql += $" AND Email IN ({string.Join(", ", emailFilter)})";
+                    sql += $" AND REPLACE(P.EMail, '-x#x-', '@') IN ({string.Join(", ", emailFilter)})";
                 }
 
                 if (startDate.HasValue)

@@ -1,4 +1,5 @@
 ﻿using CalendarsIntegrator.Core.Abstracts;
+using CalendarsIntegrator.Core.Concretes;
 using CalendarsIntegrator.Dependencies;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -14,6 +15,7 @@ namespace CalendarsIntegrator.Sinks
     {
 
         private IHDAClient hdaClient;
+        private DataTable entriesTable;
 
         public HDAActivitySink()
         {
@@ -22,6 +24,8 @@ namespace CalendarsIntegrator.Sinks
 
         public Task Load(ISearch search)
         {
+            // done
+
             /*
              Example of reading from hdaClient
 
@@ -34,22 +38,47 @@ namespace CalendarsIntegrator.Sinks
             }
             */
 
+            this.entriesTable = hdaClient.GetActivities(search.Emails, search.From, search.To);
+
+            if (this.entriesTable == null) return Task.CompletedTask;
+
             return Task.CompletedTask;
         }
 
         public Task<IEnumerable<ICalendarEntry>> GetEntries()
         {
-            // to be done
-            throw new NotImplementedException();
+            // done
+
+            List<ICalendarEntry> entries = new List<ICalendarEntry>();
+
+            foreach (DataRow activity in this.entriesTable.Rows)
+            {
+                entries.Add(new CalendarEntry((DateTime)activity["DataInizio"], (DateTime)activity["DataFine"], (string)activity["EMail"], (string)activity["Subject"], (string)activity["Note"],""));
+            }
+
+            return Task.FromResult((IEnumerable<ICalendarEntry>)entries);
+
         }
+
 
         public Task<bool> Exists(ICalendarEntry entry)
         {
-            // to be done
-            throw new NotImplementedException();
+            // done
+
+            Console.WriteLine(entry.Email);
+
+            string filterExpression = $"DataInizio = '{entry.Start}' AND DataFine = '{entry.End}' AND EMail = '{entry.Email}'";
+
+            DataRow[] matchingRows = entriesTable.Select(filterExpression);
+
+            Console.WriteLine(matchingRows.Length);
+
+            return Task.FromResult(matchingRows.Length > 0);
         }
 
-       
+
+
+
 
         public Task Insert(ICalendarEntry entry)
         {

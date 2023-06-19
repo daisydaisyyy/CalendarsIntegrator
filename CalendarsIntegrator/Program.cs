@@ -8,7 +8,7 @@ var microsoftSink = new Microsoft365Sink();
 var search = new DefaultSearch()
 {
     Emails = new[] { "TEST_MAIL", "ADMIN_TEST_MAIL" },
-    From = new DateTime(2022, 1, 1),
+    From = new DateTime(2020, 1, 1),
     To = new DateTime(2022, 12, 31)
 };
 

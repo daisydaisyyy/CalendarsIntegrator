@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CalendarsIntegrator.Sinks
 {
-    internal class Microsoft365Sink : ISink
+    internal class Microsoft365Sink : HDAActivitySink
     {
 
         private IGraphClient graphClient;
