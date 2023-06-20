@@ -50,8 +50,8 @@ namespace CalendarsIntegrator.Dependencies.Concretes
                     {
                         var e = emailList.ElementAt(i);
 
-                        if (e.Equals("ADMIN_TEST_MAIL")) e = "USER_MAIL1";
-                        if (e.Equals("TEST_MAIL")) e = "USER_MAIL2";
+                        if (e.Equals("ADMIN_TEST_MAIL", StringComparison.InvariantCultureIgnoreCase)) e = "USER_MAIL1";
+                        if (e.Equals("TEST_MAIL", StringComparison.InvariantCultureIgnoreCase)) e = "USER_MAIL2";
 
                         emailList[i] = e;
                     }
