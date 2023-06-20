@@ -72,10 +72,11 @@ namespace CalendarsIntegrator.Dependencies.Concretes
                 foreach (DataRow item in result.Rows)
                 {                              
 
-                    if (item["EMail"].ToString().Equals("USER_MAIL1")) 
+                    if (item["EMail"].ToString().Equals("USER_MAIL1", StringComparison.InvariantCultureIgnoreCase)) 
                         item["EMail"] = "ADMIN_TEST_MAIL";
 
-                    if (item["EMail"].ToString().Equals("USER_MAIL2"))
+                    
+                    if (item["EMail"].ToString().Equals("USER_MAIL2", StringComparison.InvariantCultureIgnoreCase))
                         item["EMail"] = "TEST_MAIL";
                 }
 

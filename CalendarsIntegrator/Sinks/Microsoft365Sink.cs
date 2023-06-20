@@ -1,18 +1,23 @@
 ﻿using CalendarsIntegrator.Core.Abstracts;
 using CalendarsIntegrator.Dependencies;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Graph.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
+
 namespace CalendarsIntegrator.Sinks
 {
-    internal class Microsoft365Sink : HDAActivitySink
+    internal class Microsoft365Sink : ISink
     {
 
         private IGraphClient graphClient;
+        private List<List<Microsoft.Graph.Models.Event>> allEventsList = new List<List<Microsoft.Graph.Models.Event>>();
 
         public Microsoft365Sink()
         {
@@ -22,13 +27,10 @@ namespace CalendarsIntegrator.Sinks
         public async Task Load(ISearch search)
         {
             try
-            {
-
-
-                // to be done
+             { 
 
                 /*
-                Example of loead
+                Example of load
                  foreach (var email in search.Emails)
                  {
                      var calendars = await graphClient.Client.Users[email]
@@ -53,8 +55,33 @@ namespace CalendarsIntegrator.Sinks
                  }
                 */
 
+                // done
+                
 
+                foreach (var email in search.Emails)
+                {
+                    var calendars = await graphClient.Client.Users[email]
+                       .Calendars.GetAsync();
 
+                    var defaultCalendar = calendars?.Value?.Where(c => string.Equals(c.Name, "Calendar")).FirstOrDefault();
+
+                    if (defaultCalendar == null) return;
+
+                    var events = await graphClient.Client.Users[email]
+                        .Calendars[defaultCalendar.Id]
+                        .Events.GetAsync();
+
+                    List<Microsoft.Graph.Models.Event>? userEventsList = events?.Value;
+                    if (userEventsList == null) return;
+
+                    this.allEventsList.Add(userEventsList);
+
+                    for (int i = 0; i < userEventsList.Count; i++)
+                    {
+                        var item = userEventsList[i];
+                        Console.WriteLine($"From {item.Start?.DateTime} to {item.End?.DateTime} Subject: {item.Subject}");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -66,20 +93,64 @@ namespace CalendarsIntegrator.Sinks
 
         public Task<bool> Exists(ICalendarEntry entry)
         {
-            // to be done
-            throw new NotImplementedException();
+            // done
+            
+            //convert to microsoft graph event
+            var graphEvent = new Microsoft.Graph.Models.Event
+            {
+                Subject = entry.Subject,
+                Start = new Microsoft.Graph.Models.DateTimeTimeZone
+                {
+                    DateTime = entry.Start.ToString("o"),
+                    TimeZone = TimeZoneInfo.Local.Id
+                },
+                End = new Microsoft.Graph.Models.DateTimeTimeZone
+                {
+                    DateTime = entry.End.ToString("o"),
+                    TimeZone = TimeZoneInfo.Local.Id
+                }
+            };
+
+            bool found = allEventsList.Any(list => list.Contains(graphEvent));
+            return Task.FromResult(found);
+            //throw new NotImplementedException();
         }
 
         public Task<IEnumerable<ICalendarEntry>> GetEntries()
         {
-            // to be done
-            throw new NotImplementedException();
+            // done
+            return Task.FromResult((IEnumerable<ICalendarEntry>)this.allEventsList);
+            //throw new NotImplementedException();
         }
 
-        public Task Insert(ICalendarEntry entry)
+        public async Task Insert(ICalendarEntry entry)
         {
             // to be done
-            throw new NotImplementedException();
+
+             var newEvent = new Microsoft.Graph.Models.Event
+             {
+                 Subject = entry.Subject,
+                 Start = new Microsoft.Graph.Models.DateTimeTimeZone
+                 {
+                     DateTime = entry.Start.ToString("o"),
+                     TimeZone = TimeZoneInfo.Local.Id
+                 },
+                 End = new Microsoft.Graph.Models.DateTimeTimeZone
+                 {
+                     DateTime = entry.End.ToString("o"),
+                     TimeZone = TimeZoneInfo.Local.Id
+                 }
+
+             };
+
+            //return graphClient.Client.Me.Calendars["{calendar-id}"].Events.PostAsync(newEvent);
+            var eventRequest = graphClient.Client.Users[entry.Email].Calendar.Events;
+            await eventRequest.PostAsync(newEvent);
+
+            // Console.WriteLine("Event created successfully.");
+
+
+            //throw new NotImplementedException();
         }
 
         public Task Delete(ICalendarEntry entry)

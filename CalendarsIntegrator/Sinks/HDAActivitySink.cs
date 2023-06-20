@@ -65,13 +65,9 @@ namespace CalendarsIntegrator.Sinks
         {
             // done
 
-            Console.WriteLine(entry.Email);
-
             string filterExpression = $"DataInizio = '{entry.Start}' AND DataFine = '{entry.End}' AND EMail = '{entry.Email}'";
 
             DataRow[] matchingRows = entriesTable.Select(filterExpression);
-
-            Console.WriteLine(matchingRows.Length);
 
             return Task.FromResult(matchingRows.Length > 0);
         }
