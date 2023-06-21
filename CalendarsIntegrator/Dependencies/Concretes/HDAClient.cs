@@ -57,7 +57,6 @@ namespace CalendarsIntegrator.Dependencies.Concretes
                     }
 
                     var emailFilter = (from e in emailList select "'" + e.Replace("-x#x-", "@") + "'");
-                    //sql += $" AND Email IN ({string.Join(", ", emailFilter)})";
                     sql += $" AND REPLACE(P.EMail, '-x#x-', '@') IN ({string.Join(", ", emailFilter)})";
                 }
 

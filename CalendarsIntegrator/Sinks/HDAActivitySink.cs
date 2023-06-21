@@ -26,18 +26,6 @@ namespace CalendarsIntegrator.Sinks
         {
             // done
 
-            /*
-             Example of reading from hdaClient
-
-            var test = hdaClient.GetActivities(search.Emails, search.From, search.To);
-            if (test == null) return Task.CompletedTask;
-
-            foreach (DataRow activity in test.Rows)
-            {
-                Console.WriteLine(activity.ItemArray);
-            }
-            */
-
             this.entriesTable = hdaClient.GetActivities(search.Emails, search.From, search.To);
 
             if (this.entriesTable == null) return Task.CompletedTask;
@@ -65,16 +53,19 @@ namespace CalendarsIntegrator.Sinks
         {
             // done
 
+            if (entry.Email.Equals("ADMIN_TEST_MAIL", StringComparison.InvariantCultureIgnoreCase))
+                entry.Email = "USER_MAIL1";
+
+
+            if (entry.Email.Equals("TEST_MAIL", StringComparison.InvariantCultureIgnoreCase))
+                entry.Email = "USER_MAIL2";
+
             string filterExpression = $"DataInizio = '{entry.Start}' AND DataFine = '{entry.End}' AND EMail = '{entry.Email}'";
 
             DataRow[] matchingRows = entriesTable.Select(filterExpression);
 
             return Task.FromResult(matchingRows.Length > 0);
         }
-
-
-
-
 
         public Task Insert(ICalendarEntry entry)
         {

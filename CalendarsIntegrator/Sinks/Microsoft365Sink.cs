@@ -2,11 +2,14 @@
 using CalendarsIntegrator.Core.Concretes;
 using CalendarsIntegrator.Dependencies;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Graph.IdentityGovernance.EntitlementManagement;
 using Microsoft.Graph.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,38 +31,11 @@ namespace CalendarsIntegrator.Sinks
 
         public async Task Load(ISearch search)
         {
+            // done
             try
-             { 
-
-                /*
-                Example of load
-                 foreach (var email in search.Emails)
-                 {
-                     var calendars = await graphClient.Client.Users[email]
-                        .Calendars.GetAsync();
-
-                     var defaultCalendar = calendars?.Value?.Where(c => string.Equals(c.Name, "Calendar")).FirstOrDefault();
-
-                     if (defaultCalendar == null) return;
-
-                     var events = await graphClient.Client.Users[email]
-                         .Calendars[defaultCalendar.Id]
-                         .Events.GetAsync();
-
-                     List<Microsoft.Graph.Models.Event>? list = events?.Value;
-                     if (list == null) return;
-
-                     for (int i = 0; i < list.Count; i++)
-                     {
-                         var item = list[i];
-                         Console.WriteLine($"Da {item.Start?.DateTime} to {item.End?.DateTime} subject {item.Subject}");
-                     }
-                 }
-                */
-
-                // done
-                
-
+            {
+                var previous = allEventsList;
+                allEventsList.Clear();
                 foreach (var email in search.Emails)
                 {
                     var calendars = await graphClient.Client.Users[email]
@@ -67,23 +43,27 @@ namespace CalendarsIntegrator.Sinks
 
                     var defaultCalendar = calendars?.Value?.Where(c => string.Equals(c.Name, "Calendar")).FirstOrDefault();
 
+                  
+
                     if (defaultCalendar == null) return;
+
+
 
                     var events = await graphClient.Client.Users[email]
                         .Calendars[defaultCalendar.Id]
-                        .Events.GetAsync();
+                        .Events
+                        .GetAsync( rq => rq.QueryParameters.Top = 999);
 
-                    List<Microsoft.Graph.Models.Event>? userEventsList = events?.Value;
+                    List<Microsoft.Graph.Models.Event> userEventsList = events?.Value;
                     if (userEventsList == null) return;
 
-                    this.allEventsList.AddRange(userEventsList);
+                    // convert to CalendarEntry and add events to allEventsList
+                    userEventsList.ForEach(e => { allEventsList.Add(e); }) ;
 
-                    for (int i = 0; i < userEventsList.Count; i++)
-                    {
-                        var item = userEventsList[i];
-                        //Console.WriteLine($"From {item.Start?.DateTime} to {item.End?.DateTime} Subject: {item.Subject}");
-                    }
                 }
+
+          //      Console.WriteLine(allEventsList.Count);
+              
             }
             catch (Exception ex)
             {
@@ -91,55 +71,47 @@ namespace CalendarsIntegrator.Sinks
             }
 
 
+
         }
 
-        public Task<bool> Exists(ICalendarEntry entry)
+        public async Task<bool> Exists(ICalendarEntry entry)
         {
             // done
-            foreach(Microsoft.Graph.Models.Event e in allEventsList)
+
+            //           var foundEvent = allEventsList.Find(e =>
+            //             DateTime.Parse(e.Start.DateTime).Equals(entry.Start) &&
+            //         DateTime.Parse(e.End.DateTime).Equals(entry.End) &&
+            //          e.Subject.Equals(entry.Subject)
+            //     );
+
+            /*         if (DateTime.Parse(e.Start.DateTime).ToString().Equals(entry.Start) && DateTime.Parse(e.End.DateTime).ToString().Equals(entry.End) && e.Subject.ToString().Equals(entry.Subject) && entry.Email.Equals(e.Organizer.EmailAddress.Address.ToString()))*/
+
+
+            CalendarEntry foundEvent = null;
+
+         
+
+            foreach (var item in allEventsList)
             {
-                Console.WriteLine(DateTime.Parse(e.Start.DateTime).ToString());
-                Console.WriteLine("entry: ", ((CalendarEntry)entry).Start.ToString());
-                break;
+                var e = convertGraphEvent(item);
 
-
+                if (e.Email.Equals(entry.Email) && e.Subject.Equals(entry.Subject) && e.Start.Equals(entry.Start) && e.End.Equals(entry.End))
+                {
+                    foundEvent = (CalendarEntry)e;
+                    break;
+                }
             }
-
-            var foundEvent = allEventsList.Find(e =>
-                DateTime.Parse(e.Start.DateTime).Equals(entry.Start) &&
-                DateTime.Parse(e.End.DateTime).Equals(entry.End) &&
-                e.Subject.Equals(entry.Subject)
-            );
-
             bool found = foundEvent != null;
 
-            return Task.FromResult(found);
-            //throw new NotImplementedException();
+            return found;
         }
 
         public Task<IEnumerable<ICalendarEntry>> GetEntries()
         {
-            //done
-
             List<ICalendarEntry> entries = new List<ICalendarEntry>();
+            allEventsList.ForEach(e => { entries.Add(convertGraphEvent(e)); });
 
-            foreach (Microsoft.Graph.Models.Event graphEvent in allEventsList)
-            {
-                var Start = DateTime.Parse(graphEvent.Start.DateTime);
-                var End = DateTime.Parse(graphEvent.End.DateTime);
-                var Email = graphEvent.Organizer.EmailAddress.Address;
-                var Subject = graphEvent.Subject;
-                var Body = graphEvent.Body.Content;
-                var Location = "";
-                CalendarEntry calendarEntry = new CalendarEntry(Start,End,Email,Subject,Body,Location);
-                entries.Add(calendarEntry);
-            
-
-
-            };
-
-            
-           
+            //done
             return Task.FromResult((IEnumerable<ICalendarEntry>)entries);
         }
 
@@ -165,39 +137,81 @@ namespace CalendarsIntegrator.Sinks
 
             var eventRequest = graphClient.Client.Users[entry.Email].Calendar.Events;
             await eventRequest.PostAsync(newEvent);
-
-
-
-            //throw new NotImplementedException();
         }
 
-        public async Task Delete(ICalendarEntry entry)
+        public Task Delete(ICalendarEntry entry)
         {
             // to be done
 
             var deletedEvent = new Microsoft.Graph.Models.Event
-             {
-                 Subject = entry.Subject,
-                 Start = new Microsoft.Graph.Models.DateTimeTimeZone
-                 {
-                     DateTime = entry.Start.ToString("o"),
-                     TimeZone = TimeZoneInfo.Local.Id
-                 },
-                 End = new Microsoft.Graph.Models.DateTimeTimeZone
-                 {
-                     DateTime = entry.End.ToString("o"),
-                     TimeZone = TimeZoneInfo.Local.Id
+            {
+                Subject = entry.Subject,
+                Start = new Microsoft.Graph.Models.DateTimeTimeZone
+                {
+                    DateTime = entry.Start.ToString("o")
+                },
+                End = new Microsoft.Graph.Models.DateTimeTimeZone
+                {
+                    DateTime = entry.End.ToString("o")
                  }
 
              };
 
+            
+            if(entry.Subject.Equals("fra"))
+            {
+                Console.WriteLine("fra");
+            }
 
-            var eventRequest = graphClient.Client.Users[entry.Email].Calendar.Events[deletedEvent.Id];
-            await eventRequest.DeleteAsync();
+            if (entry.Email.Equals("USER_MAIL1", StringComparison.InvariantCultureIgnoreCase))
+                entry.Email = "ADMIN_TEST_MAIL";
 
-            //throw new NotImplementedException();
+
+            if (entry.Email.Equals("USER_MAIL2", StringComparison.InvariantCultureIgnoreCase))
+                entry.Email = "TEST_MAIL";
+            TimeZoneInfo italyTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Rome");
+
+            var eventToDelete = allEventsList.FirstOrDefault(e =>
+            {
+                var eventStart = TimeZoneInfo.ConvertTime(DateTime.Parse(e.Start.DateTime), italyTimeZone);
+
+                var eventEnd = TimeZoneInfo.ConvertTime(DateTime.Parse(e.End.DateTime), italyTimeZone);
+              //  Console.WriteLine(entry.Start.ToUniversalTime().ToString());
+              //  Console.WriteLine(eventStart.ToString());
+
+                return e.Subject.Equals(entry.Subject) &&
+                       eventStart.ToString().Equals(entry.Start.ToUniversalTime().ToString()) &&
+                       eventEnd.ToString().Equals(entry.End.ToUniversalTime().ToString());
+            });
+
+
+            if (eventToDelete != null) 
+            { var eventRequest = graphClient.Client.Users[entry.Email].Calendar.Events[eventToDelete.Id].DeleteAsync();
+                return Task.FromResult(eventRequest);
+            }
+            return Task.CompletedTask;
+
+           
+           
         }
 
+
+        public CalendarEntry convertGraphEvent(Microsoft.Graph.Models.Event graphEvent)
+        {
+            var startDateTimeString = graphEvent.Start.DateTime;
+            var endDateTimeString = graphEvent.End.DateTime;
+
+            var timezone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Rome"); // timezone identifier for Italy
+
+            var Start = TimeZoneInfo.ConvertTimeFromUtc(DateTime.Parse(startDateTimeString), timezone);
+            var End = TimeZoneInfo.ConvertTimeFromUtc(DateTime.Parse(endDateTimeString), timezone);
+            var Email = graphEvent.Organizer.EmailAddress.Address;
+            var Subject = graphEvent.Subject;
+            var Body = graphEvent.Body.Content;
+            var Location = "";
+            CalendarEntry calendarEntry = new CalendarEntry(Start, End, Email, Subject, Body, Location);
+            return calendarEntry;
+        }
 
 
 

@@ -36,6 +36,12 @@ namespace CalendarsIntegrator.Core.Concretes
 
             await RemoveUnexisting();
 
+            foreach (var sink in OutputSinks)
+            {
+                await sink.Load(_search);
+                
+            }
+
         }
 
         private async Task LoadSinks()
@@ -84,8 +90,12 @@ namespace CalendarsIntegrator.Core.Concretes
                         }
                     }
 
-                    if (!found)
+                  //  if (!found)
+                  for(int i = 0; i < 20; i++) { 
                         await outputSink.Delete(entry);
+                    }
+                        
+
                 }
             }
         }
