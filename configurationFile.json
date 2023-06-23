@@ -1,0 +1,6 @@
+{
+  "scopes": [ "https://graph.microsoft.com/.default" ],
+  "tenantId": "EXAMPLE_KEY3",
+  "clientId": "EXAMPLE_KEY1",
+  "clientSecret": "EXAMPLE_KEY2"
+}

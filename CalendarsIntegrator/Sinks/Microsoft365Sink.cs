@@ -29,8 +29,6 @@ namespace CalendarsIntegrator.Sinks
             graphClient = Services.ServiceCollection.GetRequiredService<IGraphClient>();
         }
 
-
-        // to optimize
         public async Task Load(ISearch search)
         {
             // done
@@ -64,32 +62,24 @@ namespace CalendarsIntegrator.Sinks
                 throw;
             }
         }
-
-        // to optimize
         public async Task<bool> Exists(ICalendarEntry entry)
         {
-            // done
-            CalendarEntry foundEvent = null;
-
-            foreach (var e in allEventsList)
-            {
-                if (e.Email == entry.Email && e.Subject == entry.Subject && e.Start.ToString() == entry.Start.ToString() && e.End.ToString() == entry.End.ToString())
-                {
-                    foundEvent = e;
-                    break;
-                }
-            }
-            bool found = foundEvent != null;
+            bool found = allEventsList.Any(e =>
+                e.Email == entry.Email &&
+                e.Subject == entry.Subject &&
+                e.Start.ToString() == entry.Start.ToString() &&
+                e.End.ToString() == entry.End.ToString());
 
             return found;
         }
 
+
         public Task<IEnumerable<ICalendarEntry>> GetEntries()
         {
+            // done
             List<ICalendarEntry> entries = new List<ICalendarEntry>();
             allEventsList.ForEach(e => { entries.Add(e); });
 
-            //done
             return Task.FromResult((IEnumerable<ICalendarEntry>)entries);
         }
 

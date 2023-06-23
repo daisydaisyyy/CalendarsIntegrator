@@ -1,4 +1,5 @@
-﻿using CalendarsIntegrator.Dependencies;
+﻿using CalendarsIntegrator.Core.Concretes;
+using CalendarsIntegrator.Dependencies;
 using CalendarsIntegrator.Dependencies.Concretes;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -30,6 +31,7 @@ namespace CalendarsIntegrator
         private static ServiceProvider RegisterServices()
         {
             var sc = new ServiceCollection();
+            ConfigHandler.configuration();
 
             sc.AddSingleton<IGraphClient>(sp => new GraphClient());
             sc.AddSingleton<IHDAClient>(sp => new HDAClient());

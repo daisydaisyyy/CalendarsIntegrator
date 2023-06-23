@@ -1,4 +1,5 @@
 ﻿using Azure.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Graph;
 using Microsoft.Identity.Client;
 using Microsoft.Kiota.Abstractions;
@@ -16,6 +17,7 @@ namespace CalendarsIntegrator.Dependencies.Concretes
         private string tenantId;
         private string clientId;
         private string clientSecret;
+        private string[] scopes;
 
         public GraphServiceClient Client { get; set; }
 
@@ -28,7 +30,13 @@ namespace CalendarsIntegrator.Dependencies.Concretes
             // /.default scope, and preconfigure your permissions on the
             // app registration in Azure. An administrator must grant consent
             // to those permissions beforehand.
-            var scopes = new[] { "https://graph.microsoft.com/.default" };
+
+            //tenantId = configuration["TenantId"];
+            //clientId = configuration["ClientId"];
+            //clientSecret = configuration["ClientSecret"];
+            //scopes = configuration.GetSection("Scopes").Get<string[]>();
+
+            scopes = new[] { "https://graph.microsoft.com/.default" };
 
             // Multi-tenant apps can use "common",
             // single-tenant apps must use the tenant ID from the Azure portal

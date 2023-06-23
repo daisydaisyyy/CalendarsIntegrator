@@ -52,7 +52,6 @@ namespace CalendarsIntegrator.Sinks
         public Task<bool> Exists(ICalendarEntry entry)
         {
             // done
-
             string filterExpression = $"DataInizio = '{entry.Start}' AND DataFine = '{entry.End}' AND EMail = '{entry.Email}' AND Subject = '{entry.Subject.Replace("'", "''")}'";
 
             DataRow[] matchingRows = entriesTable.Select(filterExpression);
