@@ -18,4 +18,4 @@ await intergrator.Sync();
 //ConfigHandler.configuration();
 
 Console.WriteLine("End");
-Console.ReadLine();
+Environment.Exit(0);

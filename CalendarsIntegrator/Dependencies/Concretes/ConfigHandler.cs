@@ -8,7 +8,7 @@ namespace CalendarsIntegrator.Core.Concretes
 {
     public static class ConfigHandler
     {
-        public static void configuration()
+        public static List<object> configuration()
         {
             var fieldNames = typeof(GraphClient)
           .GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
@@ -44,6 +44,7 @@ namespace CalendarsIntegrator.Core.Concretes
                     else
                     {
                         Console.WriteLine("An error has occured: there was an error reading the json configuration file");
+                        Environment.Exit(0);
                     }
                 }
                 else // Handle other fields
@@ -54,27 +55,12 @@ namespace CalendarsIntegrator.Core.Concretes
                         {
                             items.Add(property.GetString());
                         }
-                        else
-                        {
-                            // Handle other value types if needed
-                            // For example: items.Add(property.GetInt32());
-                        }
-                    }
-                    else
-                    {
-                        // Handle the case where the field name doesn't exist in the JSON document
-                        // You can choose to skip this field or handle it differently based on your requirements
-                        // For example: items.Add(null) or throw an exception
                     }
                 }
 
 
-                // Use the properties as needed
-
-
-
-
             }
+            return items;
         }
 
 

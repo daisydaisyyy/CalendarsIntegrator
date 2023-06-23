@@ -31,14 +31,24 @@ namespace CalendarsIntegrator
         private static ServiceProvider RegisterServices()
         {
             var sc = new ServiceCollection();
-            ConfigHandler.configuration();
+            var items = ConfigHandler.configuration();
 
-            sc.AddSingleton<IGraphClient>(sp => new GraphClient());
+            string tenantId = items[0].ToString();
+            string clientId = items[1].ToString();
+            string clientSecret = items[2].ToString();
+            string scopes = items[3].ToString();
+
+            sc.AddSingleton<IGraphClient>(sp => new GraphClient(
+                tenantId,
+                clientId,
+                clientSecret,
+                scopes
+            ));
             sc.AddSingleton<IHDAClient>(sp => new HDAClient());
 
             return sc.BuildServiceProvider();
-
         }
+
 
     }
 }

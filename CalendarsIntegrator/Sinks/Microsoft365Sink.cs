@@ -37,23 +37,34 @@ namespace CalendarsIntegrator.Sinks
                 allEventsList.Clear();
                 foreach (var email in search.Emails)
                 {
-                    var calendars = await graphClient.Client.Users[email]
-                       .Calendars.GetAsync();
+                    try
+                    {
+                        var calendars = await graphClient.Client.Users[email]
+                           .Calendars.GetAsync();
 
-                    var defaultCalendar = calendars?.Value?.Where(c => string.Equals(c.Name, "Calendar")).FirstOrDefault();
 
-                    if (defaultCalendar == null) return;
+                        var defaultCalendar = calendars?.Value?.Where(c => string.Equals(c.Name, "Calendar")).FirstOrDefault();
 
-                    var events = await graphClient.Client.Users[email]
-                        .Calendars[defaultCalendar.Id]
-                        .Events
-                        .GetAsync( rq => rq.QueryParameters.Top = 999);
+                        if (defaultCalendar == null) return;
 
-                    List<Microsoft.Graph.Models.Event> userEventsList = events?.Value;
-                    if (userEventsList == null) continue;
+                        var events = await graphClient.Client.Users[email]
+                            .Calendars[defaultCalendar.Id]
+                            .Events
+                            .GetAsync(rq => rq.QueryParameters.Top = 999);
 
-                    // convert to CalendarEntry and add events to allEventsList
-                    userEventsList.ForEach(e => { allEventsList.Add(convertGraphEvent(e)); }) ;
+                        List<Microsoft.Graph.Models.Event> userEventsList = events?.Value;
+                        if (userEventsList == null) continue;
+
+                        // convert to CalendarEntry and add events to allEventsList
+                        userEventsList.ForEach(e => { allEventsList.Add(convertGraphEvent(e)); });
+                    }
+
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine("An error has occured: there was an error reading the json configuration file");
+                        Environment.Exit(0);
+                    }
+
 
                 }
             }
