@@ -15,12 +15,9 @@ namespace CalendarsIntegrator.Core.Concretes
     {
         private IEnumerable<ISink> _InputSinks;
         private IEnumerable<ISink> _OutputSinks;
-
         private ISearch _search;
-
         public IEnumerable<ISink> InputSinks => _InputSinks;
         public IEnumerable<ISink> OutputSinks => _OutputSinks;
-
         public Integrator(IEnumerable<ISink> input, IEnumerable<ISink> output, ISearch search)
         {
             _InputSinks = input;
@@ -61,13 +58,14 @@ namespace CalendarsIntegrator.Core.Concretes
         {
             foreach (var inputSink in InputSinks)
             {
+                inputSink.GetEntries().Result.Count();
                 foreach (var entry in await inputSink.GetEntries())
                 {
 
                     foreach (var outputSink in OutputSinks)
                     {
-                        if (!await outputSink.Exists(entry))
-                            await outputSink.Insert(entry);
+                       if (!await outputSink.Exists(entry))
+                         await outputSink.Insert(entry);
                     }
                 }
             }
@@ -90,14 +88,14 @@ namespace CalendarsIntegrator.Core.Concretes
                         }
                     }
 
-                  //  if (!found)
-                  for(int i = 0; i < 20; i++) { 
+                    if(!found)
                         await outputSink.Delete(entry);
-                    }
-                        
 
+                  
                 }
+                outputSink.GetEntries().Result.Count();
             }
+            
         }
     }
 }

@@ -13,10 +13,17 @@ namespace CalendarsIntegrator.Dependencies.Concretes
 {
     internal class GraphClient : IGraphClient
     {
+        private string tenantId;
+        private string clientId;
+        private string clientSecret;
+
         public GraphServiceClient Client { get; set; }
 
         public GraphClient()
         {
+
+
+
             // The client credentials flow requires that you request the
             // /.default scope, and preconfigure your permissions on the
             // app registration in Azure. An administrator must grant consent
@@ -45,5 +52,11 @@ namespace CalendarsIntegrator.Dependencies.Concretes
 
         }
 
+        public GraphClient(string tenantId, string clientId, string clientSecret)
+        {
+            this.tenantId = tenantId;
+            this.clientId = clientId;
+            this.clientSecret = clientSecret;
+        }
     }
 }

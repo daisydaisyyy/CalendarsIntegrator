@@ -39,7 +39,7 @@ namespace CalendarsIntegrator.Sinks
 
             List<ICalendarEntry> entries = new List<ICalendarEntry>();
 
-            foreach (DataRow activity in this.entriesTable.Rows)
+            foreach (DataRow activity in entriesTable.Rows)
             {
                 entries.Add(new CalendarEntry((DateTime)activity["DataInizio"], (DateTime)activity["DataFine"], (string)activity["EMail"], (string)activity["Subject"], (string)activity["Note"],""));
             }
@@ -53,14 +53,7 @@ namespace CalendarsIntegrator.Sinks
         {
             // done
 
-            if (entry.Email.Equals("ADMIN_TEST_MAIL", StringComparison.InvariantCultureIgnoreCase))
-                entry.Email = "USER_MAIL1";
-
-
-            if (entry.Email.Equals("TEST_MAIL", StringComparison.InvariantCultureIgnoreCase))
-                entry.Email = "USER_MAIL2";
-
-            string filterExpression = $"DataInizio = '{entry.Start}' AND DataFine = '{entry.End}' AND EMail = '{entry.Email}'";
+            string filterExpression = $"DataInizio = '{entry.Start}' AND DataFine = '{entry.End}' AND EMail = '{entry.Email}' AND Subject = '{entry.Subject.Replace("'", "''")}'";
 
             DataRow[] matchingRows = entriesTable.Select(filterExpression);
 
