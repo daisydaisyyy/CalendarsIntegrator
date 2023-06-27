@@ -19,6 +19,7 @@ namespace CalendarsIntegrator.Core.Abstracts
         public string Subject { get; set; }
         public string Body { get; set; }
         public string Location { get; set; }
+        public string DbID { get; set; }
 
     }
 }

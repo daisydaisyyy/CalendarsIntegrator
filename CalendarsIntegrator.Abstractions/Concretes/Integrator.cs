@@ -53,7 +53,6 @@ namespace CalendarsIntegrator.Core.Concretes
         {
             foreach (var inputSink in InputSinks)
             {
-                inputSink.GetEntries().Result.Count();
                 foreach (var entry in await inputSink.GetEntries())
                 {
 
@@ -92,5 +91,7 @@ namespace CalendarsIntegrator.Core.Concretes
             }
             
         }
+
+
     }
 }

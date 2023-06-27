@@ -2,7 +2,8 @@
 using CalendarsIntegrator.Core.Concretes;
 using CalendarsIntegrator.Dependencies;
 using Microsoft.Extensions.DependencyInjection;
-
+using Microsoft.Graph.Models;
+using Microsoft.Graph.Shares.Item.Permission.Grant;
 
 namespace CalendarsIntegrator.Sinks
 {
@@ -96,9 +97,13 @@ namespace CalendarsIntegrator.Sinks
                     {
                         DateTime = entry.End.ToString("o"),
                         TimeZone = TimeZoneInfo.Local.Id
-                    }
+                    },
+
 
                 };
+
+                newEvent.AdditionalData =  { "syncDatabase", entry.DbID };
+
 
                 var eventRequest = graphClient.Client.Users[entry.Email].Calendar.Events;
                 await eventRequest.PostAsync(newEvent);
@@ -167,8 +172,16 @@ namespace CalendarsIntegrator.Sinks
             string Body = graphEvent.Body.Content;
             string Location = "";
             string id = graphEvent.Id;
+            string dbid = string.Empty;
+            var additionalData = graphEvent.AdditionalData ?? new Dictionary<string, object>();
+            if (additionalData.ContainsKey("syncDatabase") && additionalData["syncDatabase"] is string)
+            {
+                dbid = (string)additionalData["syncDatabase"];
+            }
 
-            Microsoft365CalendarEntry calendarEntry = new Microsoft365CalendarEntry(Start, End, Email, Subject, Body, Location, id);
+
+            Microsoft365CalendarEntry calendarEntry = new Microsoft365CalendarEntry(Start, End, Email, Subject, Body, Location,dbid, id);
+
             return calendarEntry;
         }
 

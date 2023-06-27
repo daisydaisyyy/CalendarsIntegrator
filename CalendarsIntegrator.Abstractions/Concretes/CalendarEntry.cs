@@ -16,8 +16,9 @@ namespace CalendarsIntegrator.Core.Concretes
         private string _Subject;
         private string _Body;
         private string _Location;
+        private string _DbID;
 
-        public CalendarEntry(DateTime start, DateTime end, string email, string subject, string body, string location)
+        public CalendarEntry(DateTime start, DateTime end, string email, string subject, string body, string location, string dbID)
         {
             _Start = start;
             _End = end;
@@ -25,7 +26,7 @@ namespace CalendarsIntegrator.Core.Concretes
             _Subject = subject;
             _Body = body;
             _Location = location;
-            
+            _DbID = dbID;   
         }
 
         public DateTime Start // This is your property
@@ -58,6 +59,11 @@ namespace CalendarsIntegrator.Core.Concretes
         {
             get => _Location;
             set => _Location = value;
+        }
+        public string DbID
+        {
+            get => _DbID;
+            set => _DbID = value;
         }
 
 

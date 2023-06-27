@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,10 +17,11 @@ namespace CalendarsIntegrator.Sinks
 
         private IHDAClient hdaClient;
         private DataTable entriesTable;
-
-        public HDAActivitySink()
+        private string dbID;
+        public HDAActivitySink(string dbID)
         {
             hdaClient = Services.ServiceCollection.GetRequiredService<IHDAClient>();
+            this.dbID = dbID;
         }
 
         public Task Load(ISearch search)
@@ -41,7 +43,7 @@ namespace CalendarsIntegrator.Sinks
 
             foreach (DataRow activity in entriesTable.Rows)
             {
-                entries.Add(new CalendarEntry((DateTime)activity["DataInizio"], (DateTime)activity["DataFine"], (string)activity["EMail"], (string)activity["Subject"], (string)activity["Note"],""));
+                entries.Add(new CalendarEntry((DateTime)activity["DataInizio"], (DateTime)activity["DataFine"], (string)activity["EMail"], (string)activity["Subject"], (string)activity["Note"], "", dbID));
             }
 
             return Task.FromResult((IEnumerable<ICalendarEntry>)entries);

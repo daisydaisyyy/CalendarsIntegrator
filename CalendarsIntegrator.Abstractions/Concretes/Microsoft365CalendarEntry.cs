@@ -9,7 +9,7 @@ namespace CalendarsIntegrator.Core.Concretes
     public class Microsoft365CalendarEntry : CalendarEntry
     {
         private string _Id;
-        public Microsoft365CalendarEntry(DateTime start, DateTime end, string email, string subject, string body, string location, string id) : base(start, end, email, subject, body, location)
+        public Microsoft365CalendarEntry(DateTime start, DateTime end, string email, string subject, string body, string location, string dbid, string id) : base(start, end, email, subject, body, location, dbid)
         {
             _Id = id;
         }

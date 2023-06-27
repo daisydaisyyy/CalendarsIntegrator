@@ -3,7 +3,7 @@ using CalendarsIntegrator.Core.Abstracts;
 using CalendarsIntegrator.Core.Concretes;
 using CalendarsIntegrator.Sinks;
 
-var hdaSink = new HDAActivitySink();
+var hdaSink = new HDAActivitySink("db1");
 var microsoftSink = new Microsoft365Sink();
 var search = new DefaultSearch()
 {
