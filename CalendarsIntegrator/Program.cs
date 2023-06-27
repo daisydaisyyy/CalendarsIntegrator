@@ -15,7 +15,5 @@ var search = new DefaultSearch()
 var intergrator = new Integrator(new ISink[] { hdaSink }, new ISink[] { microsoftSink }, search);
 await intergrator.Sync();
 
-//ConfigHandler.configuration();
-
-Console.WriteLine("End");
+Console.WriteLine("Calendar synchronized successfully.");
 Environment.Exit(0);

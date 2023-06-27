@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CalendarsIntegrator.Core.Abstracts;
+﻿using CalendarsIntegrator.Core.Abstracts;
 
 namespace CalendarsIntegrator.Core.Concretes
 {

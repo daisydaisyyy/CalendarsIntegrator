@@ -1,68 +1,38 @@
-﻿using CalendarsIntegrator.Dependencies.Concretes;
-using System.Reflection;
+﻿using Microsoft.Extensions.Configuration;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
 
 namespace CalendarsIntegrator.Core.Concretes
 {
     public static class ConfigHandler
     {
-        public static List<object> configuration()
+
+
+        public static Dictionary<string, string> configuration()
         {
-            var fieldNames = typeof(GraphClient)
-          .GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
-          .Select(f => f.Name);
-            fieldNames.Take(fieldNames.Count() - 1).ToList();
+            ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string directoryPath = Path.Combine(desktopPath, "Stage 2023", "CalendarsIntegrator");
+            string filePath = Path.Combine(directoryPath, "configurationFile.json");
 
-            var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            var directoryPath = Path.Combine(desktopPath, "Stage 2023", "CalendarsIntegrator");
-            var filePath = Path.Combine(directoryPath, "configurationFile.json");
+            configurationBuilder.AddJsonFile(filePath);
 
-            var configBuilder = new ConfigurationBuilder().AddJsonFile(filePath);
+            IConfigurationRoot configuration = configurationBuilder.Build();
 
-            var json = File.ReadAllText(filePath);
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var jsonDocument = JsonDocument.Parse(json);
+            var temp = configuration.GetChildren();
+            var dictionary = configuration.GetChildren()
+            .ToDictionary(section => section.Key, section => section.Value);
 
-            // Access properties dynamically
-            var items = new List<object>();
-            foreach (var field in fieldNames)
+
+            
+            if (dictionary.Count == 0)
             {
-                if (field == "scopes") // Check if the field is "scopes"
-                {
-                    if (jsonDocument.RootElement.TryGetProperty(field, out var property))
-                    {
-                        if (property.ValueKind == JsonValueKind.Array)
-                        {
-                            var scopes = property.EnumerateArray()
-                                                 .Select(s => s.GetString())
-                                                 .ToList();
-                            items.AddRange(scopes);
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("An error has occured: there was an error reading the json configuration file");
-                        Environment.Exit(0);
-                    }
-                }
-                else // Handle other fields
-                {
-                    if (jsonDocument.RootElement.TryGetProperty(field, out var property))
-                    {
-                        if (property.ValueKind == JsonValueKind.String)
-                        {
-                            items.Add(property.GetString());
-                        }
-                    }
-                }
-
-
+                Console.WriteLine("An error has occurred: there was an error reading the JSON configuration file");
+                Environment.Exit(0);
             }
-            return items;
-        }
 
+            return dictionary;
+        }
 
     }
 }

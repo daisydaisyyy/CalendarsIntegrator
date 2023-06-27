@@ -2,11 +2,7 @@
 using CalendarsIntegrator.Dependencies;
 using CalendarsIntegrator.Dependencies.Concretes;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace CalendarsIntegrator
 {
@@ -30,21 +26,22 @@ namespace CalendarsIntegrator
 
         private static ServiceProvider RegisterServices()
         {
-            var sc = new ServiceCollection();
-            var items = ConfigHandler.configuration();
-
-            string tenantId = items[0].ToString();
-            string clientId = items[1].ToString();
-            string clientSecret = items[2].ToString();
-            string scopes = items[3].ToString();
+            ServiceCollection sc = new ServiceCollection();
+            var items = ConfigHandler.configuration(); // read jsonfile
 
             sc.AddSingleton<IGraphClient>(sp => new GraphClient(
-                tenantId,
-                clientId,
-                clientSecret,
-                scopes
+                items["tenantId"].ToString(),
+                items["clientId"].ToString(),
+                items["clientSecret"].ToString(),
+                JsonSerializer.Deserialize<string[]>(items["scopes"].ToString())
             ));
-            sc.AddSingleton<IHDAClient>(sp => new HDAClient());
+            sc.AddSingleton<IHDAClient>(sp => new HDAClient(
+                items["dataSource"].ToString(),
+                items["userID"].ToString(),
+                items["password"].ToString(),
+                items["initialCatalog"].ToString(),
+                bool.Parse(items["encrypt"].ToString())
+           ));
 
             return sc.BuildServiceProvider();
         }

@@ -1,11 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CalendarsIntegrator.Dependencies.Concretes
 {
@@ -13,17 +7,19 @@ namespace CalendarsIntegrator.Dependencies.Concretes
     {
         private SqlConnection _connection;
 
-        public HDAClient()
+
+        public HDAClient(string dataSource, string userID, string password, string initialCatalog, bool encrypt)
         {
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
 
-            builder.DataSource = "SOURCE";
-            builder.UserID = "USER_ID";
-            builder.Password = "YOUR_DB_PASSWORD";
-            builder.InitialCatalog = "HDA_10";
-            builder.Encrypt = false;
+            builder.DataSource = dataSource;
+            builder.UserID = userID;
+            builder.Password = password;
+            builder.InitialCatalog = initialCatalog;
+            builder.Encrypt = encrypt;
 
             _connection = new SqlConnection(builder.ConnectionString);
+            
         }
 
         public void Dispose()
@@ -44,11 +40,11 @@ namespace CalendarsIntegrator.Dependencies.Concretes
 
                 if (email?.Count() > 0)
                 {
-                    var emailList = email.ToList();
+                    List<string> emailList = email.ToList();
 
                     for (int i = 0; i < emailList.Count(); i++)
                     {
-                        var e = emailList.ElementAt(i);
+                        string e = emailList.ElementAt(i);
 
                         if (e.Equals("ADMIN_TEST_MAIL", StringComparison.InvariantCultureIgnoreCase)) e = "USER_MAIL1";
                         if (e.Equals("TEST_MAIL", StringComparison.InvariantCultureIgnoreCase)) e = "USER_MAIL2";
@@ -66,7 +62,7 @@ namespace CalendarsIntegrator.Dependencies.Concretes
                 if (endDate.HasValue)
                     sql += $" AND PAP.DataFine <= CONVERT(DATE, '{endDate?.ToString("yyyy-MM-dd")}')";
 
-                var result = GetDataTable(sql);
+                DataTable result = GetDataTable(sql);
 
                 foreach (DataRow item in result.Rows)
                 {                              
@@ -90,19 +86,32 @@ namespace CalendarsIntegrator.Dependencies.Concretes
 
         private DataTable GetDataTable(string sqlQuery)
         {
-
-            var result = new DataTable();
-            using (SqlCommand command = new SqlCommand(sqlQuery, _connection))
-            {
-
-                using (SqlDataAdapter adapter = new SqlDataAdapter(command))
+            DataTable result = null;
+            try {
+                result = new DataTable();
+                using (SqlCommand command = new SqlCommand(sqlQuery, _connection))
                 {
-                    adapter.Fill(result);
+
+                    using (SqlDataAdapter adapter = new SqlDataAdapter(command))
+                    {
+                        adapter.Fill(result);
+                    }
+
                 }
 
+                
             }
-
+            catch(Microsoft.Data.SqlClient.SqlException e)
+            {
+                Console.WriteLine("Database authentication error.");
+                Environment.Exit(0);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine("Error during database loading");
+            }
             return result;
+
         }
 
 

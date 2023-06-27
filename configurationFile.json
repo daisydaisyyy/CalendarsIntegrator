@@ -1,6 +1,11 @@
 {
-  "scopes": [ "https://graph.microsoft.com/.default" ],
+  "scopes": "[\"https://graph.microsoft.com/.default\"]",
   "tenantId": "EXAMPLE_KEY3",
   "clientId": "EXAMPLE_KEY1",
-  "clientSecret": "EXAMPLE_KEY2"
+  "clientSecret": "EXAMPLE_KEY2",
+  "dataSource": "SOURCE",
+  "userID": "USER_ID",
+  "password": "YOUR_DB_PASSWORD",
+  "initialCatalog": "HDA_10",
+  "encrypt": false
 }
