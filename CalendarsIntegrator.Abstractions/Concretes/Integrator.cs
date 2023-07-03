@@ -78,19 +78,22 @@ namespace CalendarsIntegrator.Core.Concretes
 
                     foreach (var inputSink in InputSinks)
                     {
-                        if (entry.DbID.Contains("HDA_10"))
+                        if (entry.DbID.Contains(":"))
                         {
-                            if (await inputSink.Exists(entry))
+                            if (entry.DbID.Contains("HDA_10"))
                             {
-                                found = true;
-                                break;
+                                if (await inputSink.Exists(entry))
+                                {
+                                    found = true;
+                                    break;
+                                }
                             }
                         }
                         else
                             userCreated = true;
                     }
 
-                    if(!found && !userCreated) //if you want to delete all events besides those created by the user set the condition to found && !userCreated, if you want to delete EVERY event you can comment this line
+                    if(!found && !userCreated) //if you want to delete all events besides those created by the user set the condition to found && !userCreated, if you want to delete EVERY event you can comment this line and also the line that invokes AddUnexisting();
                         await outputSink.Delete(entry);
 
                   

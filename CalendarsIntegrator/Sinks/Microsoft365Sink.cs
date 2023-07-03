@@ -119,8 +119,7 @@ namespace CalendarsIntegrator.Sinks
                     {
                         DateTime = entry.End.ToString("o"),
                         TimeZone = TimeZoneInfo.Local.Id
-                    },
-                    //AdditionalData = new Dictionary<string, object>()
+                    }
                 };
 
                 newEvent.TransactionId = entry.DbID;  //genera duplicati e non gli garba, sol: mettere un iteratore davanti es. 1:DbID... 502:DbID ..., 2ask

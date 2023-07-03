@@ -9,17 +9,22 @@ namespace CalendarsIntegrator.Sinks
 {
     public class HDAActivitySink : ISink
     {
-        private readonly ILogger<string> _logger;
+        private readonly ILogger<HDAActivitySink> _logger;
         private IHDAClient hdaClient;
         private DataTable entriesTable;
         public string dbID;
-        public HDAActivitySink(string dbID, ILogger<string> logger)
+        public HDAActivitySink(string dbID, ILogger<HDAActivitySink> logger)
         {
-            _logger = logger;
+
             hdaClient = Services.ServiceCollection.GetRequiredService<IHDAClient>();
             this.dbID = dbID;
-            _logger.LogInformation("kkkkkkkk", "Prova", "12");
-            _logger.LogError(AppLogEvents.Error, "Prova", "12");
+            _logger = logger;
+            _logger.LogInformation(AppLogEvents.Create, "Qua va messo l'oggetto inserito/caricato/rimosso");
+     
+            _logger.LogError(AppLogEvents.Error,"Poi tipo se dà errore esce questo");
+            _logger.LogDebug(AppLogEvents.Read,"E tutto va scritto su file");
+     
+            //_logger.LogError(AppLogEvents.Error, "Prova", "12");
             
         }
 
@@ -59,10 +64,10 @@ namespace CalendarsIntegrator.Sinks
         public Task<bool> Exists(ICalendarEntry entry)
         {
             // done
+
             string filterExpression = $"DataInizio = '{entry.Start}' AND DataFine = '{entry.End}' AND EMail = '{entry.Email}' AND Subject = '{entry.Subject.Replace("'", "''")}'";
 
             DataRow[] matchingRows = entriesTable.Select(filterExpression);
-
             return Task.FromResult(matchingRows.Length > 0);
         }
 

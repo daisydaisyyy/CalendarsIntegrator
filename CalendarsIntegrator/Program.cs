@@ -4,10 +4,16 @@ using CalendarsIntegrator.Core.Concretes;
 using CalendarsIntegrator.Sinks;
 using Microsoft.Extensions.Logging;
 
-LogHandler.initialize(); 
-ILoggerFactory loggerFactory = new LoggerFactory();
+LogHandler.initialize();  //2 replace
 
-var logger = loggerFactory.CreateLogger<string>();
+
+ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
+{
+    builder.AddConsole();
+});
+
+ILogger<HDAActivitySink> logger = loggerFactory.CreateLogger<HDAActivitySink>();
+
 var hdaSink = new HDAActivitySink("HDA_10",logger);
 var microsoftSink = new Microsoft365Sink();
 var search = new DefaultSearch()
