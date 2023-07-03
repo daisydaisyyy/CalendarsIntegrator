@@ -22,12 +22,12 @@ namespace CalendarsIntegrator.Core.Concretes
             var temp = configuration.GetChildren();
             var dictionary = configuration.GetChildren()
             .ToDictionary(section => section.Key, section => section.Value);
-
+            
 
             
             if (dictionary.Count == 0)
             {
-                Console.WriteLine("An error has occurred: there was an error reading the JSON configuration file");
+                LogHandler.WriteOnLog("An error has occurred: there was an error reading the JSON configuration file");
                 Environment.Exit(0);
             }
 

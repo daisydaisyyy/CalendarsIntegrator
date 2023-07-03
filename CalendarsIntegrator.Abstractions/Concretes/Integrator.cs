@@ -1,4 +1,5 @@
 ﻿using CalendarsIntegrator.Core.Abstracts;
+using System.Linq;
 
 namespace CalendarsIntegrator.Core.Concretes
 {
@@ -24,9 +25,10 @@ namespace CalendarsIntegrator.Core.Concretes
         {
             await LoadSinks();
 
+            await RemoveUnexisting();
+
             await AddUnexisting();
 
-            await RemoveUnexisting();
 
             foreach (var sink in OutputSinks)
             {
@@ -72,26 +74,29 @@ namespace CalendarsIntegrator.Core.Concretes
                 foreach (var entry in await outputSink.GetEntries())
                 {
                     bool found = false;
+                    bool userCreated = false;
 
                     foreach (var inputSink in InputSinks)
                     {
-                        if (await inputSink.Exists(entry))
+                        if (entry.DbID.Contains("HDA_10"))
                         {
-                            found = true;
-                            break;
+                            if (await inputSink.Exists(entry))
+                            {
+                                found = true;
+                                break;
+                            }
                         }
+                        else
+                            userCreated = true;
                     }
 
-                    if(!found)
+                    if(!found && !userCreated) //if you want to delete all events besides those created by the user set the condition to found && !userCreated, if you want to delete EVERY event you can comment this line
                         await outputSink.Delete(entry);
 
                   
                 }
                 outputSink.GetEntries().Result.Count();
             }
-            
         }
-
-
     }
 }

@@ -2,8 +2,13 @@
 using CalendarsIntegrator.Core.Abstracts;
 using CalendarsIntegrator.Core.Concretes;
 using CalendarsIntegrator.Sinks;
+using Microsoft.Extensions.Logging;
 
-var hdaSink = new HDAActivitySink("db1");
+LogHandler.initialize(); 
+ILoggerFactory loggerFactory = new LoggerFactory();
+
+var logger = loggerFactory.CreateLogger<string>();
+var hdaSink = new HDAActivitySink("HDA_10",logger);
 var microsoftSink = new Microsoft365Sink();
 var search = new DefaultSearch()
 {
@@ -15,5 +20,10 @@ var search = new DefaultSearch()
 var intergrator = new Integrator(new ISink[] { hdaSink }, new ISink[] { microsoftSink }, search);
 await intergrator.Sync();
 
-Console.WriteLine("Calendar synchronized successfully.");
+if (!LogHandler.didGenerateExceptions)
+    LogHandler.WriteOnLog("\nCalendar synchronized successfully.");
+else
+    LogHandler.WriteOnLog("\nThe program generated exceptions, the calendar was not synchronized correctly.");
+
+
 Environment.Exit(0);

@@ -3,20 +3,43 @@ using CalendarsIntegrator.Core.Concretes;
 using CalendarsIntegrator.Dependencies;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Graph.Models;
-using Microsoft.Graph.Shares.Item.Permission.Grant;
+using System.Data;
+using System.Drawing.Printing;
 
 namespace CalendarsIntegrator.Sinks
 {
     internal class Microsoft365Sink : ISink
     {
 
-            private IGraphClient graphClient;
-            private List<Microsoft365CalendarEntry> allEventsList = new List<Microsoft365CalendarEntry>();
+        //mettere logger
+        private IGraphClient graphClient;
+        private List<Microsoft365CalendarEntry> allEventsList = new List<Microsoft365CalendarEntry>();
 
 
         public Microsoft365Sink()
         {
             graphClient = Services.ServiceCollection.GetRequiredService<IGraphClient>();
+            var a = addExtensions();
+            var b = Task.FromResult(a);
+
+        }
+
+        
+
+
+        public async Task<ExtensionProperty> addExtensions()
+        {
+            var requestBody = new ExtensionProperty
+            {
+                Name = "jobGroupTracker",
+                DataType = "String",
+                TargetObjects = new List<string>
+                {
+                    "User",
+                },
+            };
+            var result = await graphClient.Client.Applications["EXAMPLE_KEY1"].ExtensionProperties.PostAsync(requestBody);
+            return result;
         }
 
         public async Task Load(ISearch search)
@@ -27,9 +50,7 @@ namespace CalendarsIntegrator.Sinks
             {
                 foreach (var email in search.Emails)
                 {
-                    var calendars = await graphClient.Client.Users[email]
-                       .Calendars.GetAsync();
-
+                    var calendars = await graphClient.Client.Users[email].Calendars.GetAsync();
 
                     var defaultCalendar = calendars?.Value?.Where(c => string.Equals(c.Name, "Calendar")).FirstOrDefault();
 
@@ -40,21 +61,23 @@ namespace CalendarsIntegrator.Sinks
                         .Events
                         .GetAsync(rq => rq.QueryParameters.Top = 999);
 
-                    List<Microsoft.Graph.Models.Event> userEventsList = events?.Value;
+                    List<Event> userEventsList = events?.Value;
                     if (userEventsList == null) continue;
 
                     // convert to CalendarEntry and add events to allEventsList
-                    userEventsList.ForEach(e => { allEventsList.Add(convertGraphEvent(e)); });
+                    userEventsList.ForEach(e => { allEventsList.Add(convertGraphEvent(e)); LogHandler.WriteOnLog("Loaded event, details: " + "Email: " + convertGraphEvent(e).Email + " |Start: " + convertGraphEvent(e).Start + " |End: " + convertGraphEvent(e).End + " |Subject: " + convertGraphEvent(e).Subject + " |Id: " + convertGraphEvent(e).Id + " |DbID: " + convertGraphEvent(e).DbID); });
+                    
                 }
             }
             catch (Azure.Identity.AuthenticationFailedException authEx)
             {
-                Console.WriteLine("Microsoft calendar authentication error.");
+                LogHandler.WriteOnLog("The load method from the calendar generated an exception due to an authentication error, check auth keys on configurationFile.json");
                 Environment.Exit(0);
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error during loading.");
+                LogHandler.didGenerateExceptions = true;
+                LogHandler.WriteOnLog("The load method from the calendar generated an exception, details: " + e.StackTrace);
             }
         }
 
@@ -82,35 +105,36 @@ namespace CalendarsIntegrator.Sinks
         public async Task Insert(ICalendarEntry entry)
         {
             // done
-
             try
             {
-                var newEvent = new Microsoft.Graph.Models.Event
+                var newEvent = new Event
                 {
                     Subject = entry.Subject,
-                    Start = new Microsoft.Graph.Models.DateTimeTimeZone
+                    Start = new DateTimeTimeZone
                     {
                         DateTime = entry.Start.ToString("o"),
                         TimeZone = TimeZoneInfo.Local.Id
                     },
-                    End = new Microsoft.Graph.Models.DateTimeTimeZone
+                    End = new DateTimeTimeZone
                     {
                         DateTime = entry.End.ToString("o"),
                         TimeZone = TimeZoneInfo.Local.Id
                     },
-
-
+                    //AdditionalData = new Dictionary<string, object>()
                 };
 
-                newEvent.AdditionalData =  { "syncDatabase", entry.DbID };
-
-
+                newEvent.TransactionId = entry.DbID;  //genera duplicati e non gli garba, sol: mettere un iteratore davanti es. 1:DbID... 502:DbID ..., 2ask
+              
+                
                 var eventRequest = graphClient.Client.Users[entry.Email].Calendar.Events;
                 await eventRequest.PostAsync(newEvent);
+                LogHandler.WriteOnLog("Inserted event, details: " + "Email: " + entry.Email + " |Start: " + entry.Start + " |End: " + entry.End + " |Subject: " + entry.Subject + " |Id: DOESN'T HAVE AN ID YET" + " |DbID: " + entry.DbID);
+
             }
             catch(Exception e)
             {
-                Console.WriteLine("Error during insert event.");
+                LogHandler.didGenerateExceptions = true;
+                LogHandler.WriteOnLog("The insert method generated an exception, details: " + e.StackTrace);
             }
         
 
@@ -119,9 +143,11 @@ namespace CalendarsIntegrator.Sinks
 
         public async Task Delete(ICalendarEntry entry)
         {
-            // done
-            try
+                // done
+                try
             {
+                    
+
                 entry.Email = entry.Email.Equals("USER_MAIL1", StringComparison.InvariantCultureIgnoreCase)
                 ? "ADMIN_TEST_MAIL"
                 : entry.Email;
@@ -153,14 +179,16 @@ namespace CalendarsIntegrator.Sinks
                     }
                 }
 
+                LogHandler.WriteOnLog("Deleted event, details: " + "Email: " + eventToDelete.Email + " |Start: " + eventToDelete.Start + " |End: " + eventToDelete.End + " |Subject: " + eventToDelete.Subject + " |Id: " + eventToDelete.Id + " |DbID: " + eventToDelete.DbID);
             }
-            catch
+            catch(Exception ex)
             {
-                Console.WriteLine("Error during delete event.");
+                LogHandler.didGenerateExceptions = true;
+                LogHandler.WriteOnLog("The delete method generated an exception, details: " + ex.StackTrace);
             }
         }
 
-        public Microsoft365CalendarEntry convertGraphEvent(Microsoft.Graph.Models.Event graphEvent)
+        public Microsoft365CalendarEntry convertGraphEvent(Event graphEvent)
         {
             var startDateTimeString = graphEvent.Start.DateTime;
             var endDateTimeString = graphEvent.End.DateTime;
@@ -172,21 +200,15 @@ namespace CalendarsIntegrator.Sinks
             string Body = graphEvent.Body.Content;
             string Location = "";
             string id = graphEvent.Id;
-            string dbid = string.Empty;
-            var additionalData = graphEvent.AdditionalData ?? new Dictionary<string, object>();
-            if (additionalData.ContainsKey("syncDatabase") && additionalData["syncDatabase"] is string)
-            {
-                dbid = (string)additionalData["syncDatabase"];
-            }
+            string dbid = graphEvent.TransactionId;
+           
+            
 
 
             Microsoft365CalendarEntry calendarEntry = new Microsoft365CalendarEntry(Start, End, Email, Subject, Body, Location,dbid, id);
 
             return calendarEntry;
         }
-
-
-
 
     }
 }

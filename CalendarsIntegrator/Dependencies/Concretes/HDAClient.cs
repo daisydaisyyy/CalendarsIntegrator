@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using CalendarsIntegrator.Core.Concretes;
+using Microsoft.Data.SqlClient;
 using System.Data;
 
 namespace CalendarsIntegrator.Dependencies.Concretes
@@ -6,7 +7,7 @@ namespace CalendarsIntegrator.Dependencies.Concretes
     internal class HDAClient : IHDAClient, IDisposable
     {
         private SqlConnection _connection;
-
+        private string DbID;
 
         public HDAClient(string dataSource, string userID, string password, string initialCatalog, bool encrypt)
         {
@@ -17,6 +18,7 @@ namespace CalendarsIntegrator.Dependencies.Concretes
             builder.Password = password;
             builder.InitialCatalog = initialCatalog;
             builder.Encrypt = encrypt;
+            DbID = initialCatalog;
 
             _connection = new SqlConnection(builder.ConnectionString);
             
@@ -73,13 +75,15 @@ namespace CalendarsIntegrator.Dependencies.Concretes
                     
                     if (item["EMail"].ToString().Equals("USER_MAIL2", StringComparison.InvariantCultureIgnoreCase))
                         item["EMail"] = "TEST_MAIL";
+
+                    LogHandler.WriteOnLog("Row loaded from database, details: Start: " + item["DataInizio"] + " |End: " + item["DataFine"] + " |Email: " + item["EMail"] + " |Subject: " + item["Subject"] + item["IDProtocollo"] + ":" + DbID);
                 }
 
                 return result;
             }
             catch (Exception)
             {
-
+                LogHandler.didGenerateExceptions = true;
                 throw;
             }
         }
@@ -103,17 +107,18 @@ namespace CalendarsIntegrator.Dependencies.Concretes
             }
             catch(Microsoft.Data.SqlClient.SqlException e)
             {
-                Console.WriteLine("Database authentication error.");
+                LogHandler.WriteOnLog("The load method from the database generated an exception due to an authentication error, check auth keys on configurationFile.json");
                 Environment.Exit(0);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                Console.WriteLine("Error during database loading");
+                LogHandler.didGenerateExceptions = true;
+                LogHandler.WriteOnLog("The load method from the database generated an exception, details: " + e.StackTrace);
             }
             return result;
 
         }
-
+        
 
     }
 }

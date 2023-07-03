@@ -2,32 +2,38 @@
 using CalendarsIntegrator.Core.Concretes;
 using CalendarsIntegrator.Dependencies;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Security;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace CalendarsIntegrator.Sinks
 {
-    internal class HDAActivitySink : ISink
+    public class HDAActivitySink : ISink
     {
-
+        private readonly ILogger<string> _logger;
         private IHDAClient hdaClient;
         private DataTable entriesTable;
-        private string dbID;
-        public HDAActivitySink(string dbID)
+        public string dbID;
+        public HDAActivitySink(string dbID, ILogger<string> logger)
         {
+            _logger = logger;
             hdaClient = Services.ServiceCollection.GetRequiredService<IHDAClient>();
             this.dbID = dbID;
+            _logger.LogInformation("kkkkkkkk", "Prova", "12");
+            _logger.LogError(AppLogEvents.Error, "Prova", "12");
+            
         }
+
+        public string getDbID
+        {
+            get => dbID;
+            set => dbID = value;
+        }
+
+
 
         public Task Load(ISearch search)
         {
             // done
-
             this.entriesTable = hdaClient.GetActivities(search.Emails, search.From, search.To);
 
             if (this.entriesTable == null) return Task.CompletedTask;
@@ -43,11 +49,10 @@ namespace CalendarsIntegrator.Sinks
 
             foreach (DataRow activity in entriesTable.Rows)
             {
-                entries.Add(new CalendarEntry((DateTime)activity["DataInizio"], (DateTime)activity["DataFine"], (string)activity["EMail"], (string)activity["Subject"], (string)activity["Note"], "", dbID));
+                entries.Add(new CalendarEntry((DateTime)activity["DataInizio"], (DateTime)activity["DataFine"], (string)activity["EMail"], (string)activity["Subject"], (string)activity["Note"], "", (string)activity["IDProtocollo"]+":"+dbID));
             }
 
             return Task.FromResult((IEnumerable<ICalendarEntry>)entries);
-
         }
 
 
@@ -70,8 +75,5 @@ namespace CalendarsIntegrator.Sinks
         {
             throw new NotImplementedException("I'm a readonly sink");
         }
-
-
-     
     }
 }
