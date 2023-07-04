@@ -86,10 +86,9 @@ namespace CalendarsIntegrator.Dependencies.Concretes
 
                 return result;
             }
-            catch (Exception x)
+            catch (Exception ex)
             {
-                _logger.LogError("Error reading the database, details: " + x.StackTrace, AppLogEvents.NotRead);
-                throw;
+                throw ex;
             }
         }
 
@@ -113,14 +112,14 @@ namespace CalendarsIntegrator.Dependencies.Concretes
             catch(Microsoft.Data.SqlClient.SqlException e)
             {
                 _logger.LogError("The load method from the database generated an exception due to an authentication error, check auth keys on configurationFile.json", AppLogEvents.Error);
-                Thread.Sleep(3000);
-                Environment.Exit(0);
+                throw e;
             }
 
             catch (Exception e)
 
             {
                 _logger.LogError("The load method from the database generated an exception, details: " + e.StackTrace, AppLogEvents.Error);
+                throw e;
             }
 
 

@@ -28,24 +28,32 @@ namespace CalendarsIntegrator
 
         private static ServiceProvider RegisterServices()
         {
-            ServiceCollection sc = new ServiceCollection();
-            var items = ConfigHandler.configuration(); // read jsonfile
+            try
+            {
+                ServiceCollection sc = new ServiceCollection();
+                var items = ConfigHandler.configuration(); // read jsonfile
 
-            sc.AddSingleton<IGraphClient>(sp => new GraphClient(
-                items["tenantId"].ToString(),
-                items["clientId"].ToString(),
-                items["clientSecret"].ToString(),
-                JsonSerializer.Deserialize<string[]>(items["scopes"].ToString())
-            ));
-            sc.AddSingleton<IHDAClient>(sp => new HDAClient(
-                items["dataSource"].ToString(),
-                items["userID"].ToString(),
-                items["password"].ToString(),
-                items["initialCatalog"].ToString(),
-                bool.Parse(items["encrypt"].ToString())
-           ));
-            
-            return sc.BuildServiceProvider();
+                sc.AddSingleton<IGraphClient>(sp => new GraphClient(
+                    items["tenantId"].ToString(),
+                    items["clientId"].ToString(),
+                    items["clientSecret"].ToString(),
+                    JsonSerializer.Deserialize<string[]>(items["scopes"].ToString())
+                ));
+                sc.AddSingleton<IHDAClient>(sp => new HDAClient(
+                    items["dataSource"].ToString(),
+                    items["userID"].ToString(),
+                    items["password"].ToString(),
+                    items["initialCatalog"].ToString(),
+                    bool.Parse(items["encrypt"].ToString())
+               ));
+
+                return sc.BuildServiceProvider();
+            }
+            catch(Exception ex)
+            {
+                Environment.Exit(0);
+                return null;
+            }
         }
 
 

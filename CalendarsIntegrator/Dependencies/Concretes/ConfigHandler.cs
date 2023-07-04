@@ -29,8 +29,7 @@ namespace CalendarsIntegrator.Core.Concretes
             if (dictionary.Count == 0)
             {
                 Services._logger.LogError("An error has occurred: there was an error reading the JSON configuration file");
-                Thread.Sleep(3000);
-                Environment.Exit(0);
+                throw new Exception();
             }
 
             return dictionary;

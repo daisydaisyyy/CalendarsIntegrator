@@ -1,5 +1,5 @@
 ﻿using CalendarsIntegrator.Core.Abstracts;
-using System.Linq;
+
 
 namespace CalendarsIntegrator.Core.Concretes
 {
@@ -32,7 +32,15 @@ namespace CalendarsIntegrator.Core.Concretes
 
             foreach (var sink in OutputSinks)
             {
-                await sink.Load(_search);
+                try
+                {
+                    await sink.Load(_search);
+                } catch (Exception ex)
+                {
+                    Environment.Exit(0);
+
+                }
+                
             }
 
         }
@@ -41,12 +49,28 @@ namespace CalendarsIntegrator.Core.Concretes
         {
             foreach (var sink in InputSinks)
             {
-                await sink.Load(_search);
+                try
+                {
+                    await sink.Load(_search);
+                }
+                catch (Exception ex)
+                {
+                    Environment.Exit(0);
+
+                }
             }
 
             foreach (var sink in OutputSinks)
             {
-                await sink.Load(_search);
+                try
+                {
+                    await sink.Load(_search);
+                }
+                catch (Exception ex)
+                {
+                    Environment.Exit(0);
+
+                }
             }
         }
 
@@ -81,11 +105,18 @@ namespace CalendarsIntegrator.Core.Concretes
                         {
                             if (entry.DbID.Contains("HDA_10"))
                             {
-                                if (await inputSink.Exists(entry))
+                                try
                                 {
-                                    found = true;
-                                    break;
+                                    if (await inputSink.Exists(entry))
+                                    {
+                                        found = true;
+                                        break;
+                                    }
                                 }
+                                catch(Exception ex) {
+                                    Environment.Exit(0);
+                                }
+                               
                             }
                         }
                         else

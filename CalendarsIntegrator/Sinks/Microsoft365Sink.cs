@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph.Models;
 using System.Data;
-using System.Drawing.Printing;
 
 namespace CalendarsIntegrator.Sinks
 {
@@ -75,8 +74,7 @@ namespace CalendarsIntegrator.Sinks
             catch (Azure.Identity.AuthenticationFailedException authEx)
             {
                 _logger.LogError("The load method from the calendar generated an exception due to an authentication error, check auth keys on configurationFile.json",AppLogEvents.NotRead);
-                Thread.Sleep(3000);
-                Environment.Exit(0);
+                throw authEx;
             }
             catch (Exception e)
             {
