@@ -9,23 +9,17 @@ namespace CalendarsIntegrator.Sinks
 {
     public class HDAActivitySink : ISink
     {
-        private readonly ILogger<HDAActivitySink> _logger;
+        private readonly ILogger<string> _logger;
         private IHDAClient hdaClient;
         private DataTable entriesTable;
         public string dbID;
-        public HDAActivitySink(string dbID, ILogger<HDAActivitySink> logger)
+        public HDAActivitySink(string dbID, ILogger<string> logger)
         {
 
-            hdaClient = Services.ServiceCollection.GetRequiredService<IHDAClient>();
             this.dbID = dbID;
             _logger = logger;
-            _logger.LogInformation(AppLogEvents.Create, "Qua va messo l'oggetto inserito/caricato/rimosso");
-     
-            _logger.LogError(AppLogEvents.Error,"Poi tipo se dà errore esce questo");
-            _logger.LogDebug(AppLogEvents.Read,"E tutto va scritto su file");
-     
-            //_logger.LogError(AppLogEvents.Error, "Prova", "12");
-            
+
+            hdaClient = Services.ServiceCollection.GetRequiredService<IHDAClient>();
         }
 
         public string getDbID
@@ -55,6 +49,7 @@ namespace CalendarsIntegrator.Sinks
             foreach (DataRow activity in entriesTable.Rows)
             {
                 entries.Add(new CalendarEntry((DateTime)activity["DataInizio"], (DateTime)activity["DataFine"], (string)activity["EMail"], (string)activity["Subject"], (string)activity["Note"], "", (string)activity["IDProtocollo"]+":"+dbID));
+                _logger.LogInformation("Event read from database, details: Start: " + activity["DataInizio"] + " |End: " + activity["DataFine"] + " |Email: " + activity["EMail"] + " |Subject: " + activity["Subject"] + activity["IDProtocollo"] + ":" + dbID + "| ",AppLogEvents.Read);
             }
 
             return Task.FromResult((IEnumerable<ICalendarEntry>)entries);

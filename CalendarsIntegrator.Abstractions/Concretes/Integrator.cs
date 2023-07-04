@@ -33,7 +33,6 @@ namespace CalendarsIntegrator.Core.Concretes
             foreach (var sink in OutputSinks)
             {
                 await sink.Load(_search);
-                
             }
 
         }

@@ -1,14 +1,16 @@
 ﻿using CalendarsIntegrator.Core.Concretes;
 using CalendarsIntegrator.Dependencies;
 using CalendarsIntegrator.Dependencies.Concretes;
+using CalendarsIntegrator.Sinks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
 namespace CalendarsIntegrator
 {
     internal static class Services
     {
-
+        public static ILogger<string> _logger;
         private static ServiceProvider? _Services;
 
         public static ServiceProvider ServiceCollection
@@ -42,7 +44,7 @@ namespace CalendarsIntegrator
                 items["initialCatalog"].ToString(),
                 bool.Parse(items["encrypt"].ToString())
            ));
-
+            
             return sc.BuildServiceProvider();
         }
 

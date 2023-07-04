@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
@@ -27,7 +28,8 @@ namespace CalendarsIntegrator.Core.Concretes
             
             if (dictionary.Count == 0)
             {
-                LogHandler.WriteOnLog("An error has occurred: there was an error reading the JSON configuration file");
+                Services._logger.LogError("An error has occurred: there was an error reading the JSON configuration file");
+                Thread.Sleep(3000);
                 Environment.Exit(0);
             }
 

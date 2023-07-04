@@ -2,25 +2,27 @@
 using CalendarsIntegrator.Core.Concretes;
 using CalendarsIntegrator.Dependencies;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Graph.Models;
 using System.Data;
 using System.Drawing.Printing;
 
 namespace CalendarsIntegrator.Sinks
 {
-    internal class Microsoft365Sink : ISink
+    public class Microsoft365Sink : ISink
     {
 
-        //mettere logger
         private IGraphClient graphClient;
         private List<Microsoft365CalendarEntry> allEventsList = new List<Microsoft365CalendarEntry>();
+        private readonly ILogger<string> _logger;
 
-
-        public Microsoft365Sink()
+        public Microsoft365Sink(ILogger<string> logger)
         {
             graphClient = Services.ServiceCollection.GetRequiredService<IGraphClient>();
             var a = addExtensions();
             var b = Task.FromResult(a);
+
+            _logger = logger;
 
         }
 
@@ -65,19 +67,20 @@ namespace CalendarsIntegrator.Sinks
                     if (userEventsList == null) continue;
 
                     // convert to CalendarEntry and add events to allEventsList
-                    userEventsList.ForEach(e => { allEventsList.Add(convertGraphEvent(e)); LogHandler.WriteOnLog("Loaded event, details: " + "Email: " + convertGraphEvent(e).Email + " |Start: " + convertGraphEvent(e).Start + " |End: " + convertGraphEvent(e).End + " |Subject: " + convertGraphEvent(e).Subject + " |Id: " + convertGraphEvent(e).Id + " |DbID: " + convertGraphEvent(e).DbID); });
-                    
+                    userEventsList.ForEach(e => { allEventsList.Add(convertGraphEvent(e));
+                        _logger.LogInformation("Loaded event, details: " + "Email: " + convertGraphEvent(e).Email + " |Start: " + convertGraphEvent(e).Start + " |End: " + convertGraphEvent(e).End + " |Subject: " + convertGraphEvent(e).Subject + " |Id: " + convertGraphEvent(e).Id + " |DbID: " + convertGraphEvent(e).DbID + "| ", AppLogEvents.Read); });   
+
                 }
             }
             catch (Azure.Identity.AuthenticationFailedException authEx)
             {
-                LogHandler.WriteOnLog("The load method from the calendar generated an exception due to an authentication error, check auth keys on configurationFile.json");
+                _logger.LogError("The load method from the calendar generated an exception due to an authentication error, check auth keys on configurationFile.json",AppLogEvents.NotRead);
+                Thread.Sleep(3000);
                 Environment.Exit(0);
             }
             catch (Exception e)
             {
-                LogHandler.didGenerateExceptions = true;
-                LogHandler.WriteOnLog("The load method from the calendar generated an exception, details: " + e.StackTrace);
+                _logger.LogError("The load method from the calendar generated an exception, details: " + e.StackTrace, AppLogEvents.NotRead);
             }
         }
 
@@ -122,18 +125,17 @@ namespace CalendarsIntegrator.Sinks
                     }
                 };
 
-                newEvent.TransactionId = entry.DbID;  //genera duplicati e non gli garba, sol: mettere un iteratore davanti es. 1:DbID... 502:DbID ..., 2ask
+                newEvent.TransactionId = entry.DbID; 
               
                 
                 var eventRequest = graphClient.Client.Users[entry.Email].Calendar.Events;
                 await eventRequest.PostAsync(newEvent);
-                LogHandler.WriteOnLog("Inserted event, details: " + "Email: " + entry.Email + " |Start: " + entry.Start + " |End: " + entry.End + " |Subject: " + entry.Subject + " |Id: DOESN'T HAVE AN ID YET" + " |DbID: " + entry.DbID);
+                _logger.LogInformation("Inserted event, details: " + "Email: " + entry.Email + " |Start: " + entry.Start + " |End: " + entry.End + " |Subject: " + entry.Subject + " |Id: DOESN'T HAVE AN ID YET" + " |DbID: " + entry.DbID + "| ", AppLogEvents.Create);
 
             }
             catch(Exception e)
             {
-                LogHandler.didGenerateExceptions = true;
-                LogHandler.WriteOnLog("The insert method generated an exception, details: " + e.StackTrace);
+                _logger.LogError("The insert method generated an exception, details: " + e.StackTrace, AppLogEvents.NotCreated);
             }
         
 
@@ -143,9 +145,8 @@ namespace CalendarsIntegrator.Sinks
         public async Task Delete(ICalendarEntry entry)
         {
                 // done
-                try
+            try
             {
-                    
 
                 entry.Email = entry.Email.Equals("USER_MAIL1", StringComparison.InvariantCultureIgnoreCase)
                 ? "ADMIN_TEST_MAIL"
@@ -161,8 +162,8 @@ namespace CalendarsIntegrator.Sinks
                 Microsoft365CalendarEntry eventToDelete = allEventsList.FirstOrDefault(e =>
                 {
                     return e.Subject.Equals(entry.Subject) &&
-                           e.Start.ToString().Equals(entry.Start.ToString()) &&
-                           e.End.ToString().Equals(entry.End.ToString());
+                           e.Start.ToString().Equals(entry.Start.ToString(), StringComparison.Ordinal) &&
+                           e.End.ToString().Equals(entry.End.ToString(), StringComparison.Ordinal);
                 });
 
 
@@ -177,13 +178,11 @@ namespace CalendarsIntegrator.Sinks
                         allEventsList.Remove(eventToDelete);
                     }
                 }
-
-                LogHandler.WriteOnLog("Deleted event, details: " + "Email: " + eventToDelete.Email + " |Start: " + eventToDelete.Start + " |End: " + eventToDelete.End + " |Subject: " + eventToDelete.Subject + " |Id: " + eventToDelete.Id + " |DbID: " + eventToDelete.DbID);
+                _logger.LogInformation("Deleted event, details: " + "Email: " + eventToDelete.Email + " |Start: " + eventToDelete.Start + " |End: " + eventToDelete.End + " |Subject: " + eventToDelete.Subject + " |Id: " + eventToDelete.Id + " |DbID: " + eventToDelete.DbID + "| ", AppLogEvents.Delete);
             }
             catch(Exception ex)
             {
-                LogHandler.didGenerateExceptions = true;
-                LogHandler.WriteOnLog("The delete method generated an exception, details: " + ex.StackTrace);
+                _logger.LogError("The delete method generated an exception, details: " + ex.StackTrace, AppLogEvents.NotDeleted);
             }
         }
 
@@ -200,9 +199,6 @@ namespace CalendarsIntegrator.Sinks
             string Location = "";
             string id = graphEvent.Id;
             string dbid = graphEvent.TransactionId;
-           
-            
-
 
             Microsoft365CalendarEntry calendarEntry = new Microsoft365CalendarEntry(Start, End, Email, Subject, Body, Location,dbid, id);
 

@@ -33,8 +33,6 @@ namespace CalendarsIntegrator.Dependencies.Concretes
              var clientId = "EXAMPLE_KEY1";
              var clientSecret = EXAMPLE_KEY2
 
-
-            // using Azure.Identity;
             var options = new TokenCredentialOptions
             {
                 AuthorityHost = AzureAuthorityHosts.AzurePublicCloud

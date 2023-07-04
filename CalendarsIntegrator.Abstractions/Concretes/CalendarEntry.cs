@@ -29,12 +29,12 @@ namespace CalendarsIntegrator.Core.Concretes
             _DbID = dbID;   
         }
 
-        public DateTime Start // This is your property
+        public DateTime Start
         {
             get => _Start;
             set => _Start = value;
         }
-        public DateTime End // This is your property
+        public DateTime End
         {
             get => _End;
             set => _End = value;

@@ -1,5 +1,7 @@
 ﻿using CalendarsIntegrator.Core.Concretes;
+using CalendarsIntegrator.Sinks;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 using System.Data;
 
 namespace CalendarsIntegrator.Dependencies.Concretes
@@ -8,11 +10,14 @@ namespace CalendarsIntegrator.Dependencies.Concretes
     {
         private SqlConnection _connection;
         private string DbID;
+        private readonly ILogger<string> _logger;
 
         public HDAClient(string dataSource, string userID, string password, string initialCatalog, bool encrypt)
         {
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
 
+
+            _logger = Services._logger;
             builder.DataSource = dataSource;
             builder.UserID = userID;
             builder.Password = password;
@@ -21,7 +26,7 @@ namespace CalendarsIntegrator.Dependencies.Concretes
             DbID = initialCatalog;
 
             _connection = new SqlConnection(builder.ConnectionString);
-            
+
         }
 
         public void Dispose()
@@ -76,14 +81,14 @@ namespace CalendarsIntegrator.Dependencies.Concretes
                     if (item["EMail"].ToString().Equals("USER_MAIL2", StringComparison.InvariantCultureIgnoreCase))
                         item["EMail"] = "TEST_MAIL";
 
-                    LogHandler.WriteOnLog("Row loaded from database, details: Start: " + item["DataInizio"] + " |End: " + item["DataFine"] + " |Email: " + item["EMail"] + " |Subject: " + item["Subject"] + item["IDProtocollo"] + ":" + DbID);
+                   
                 }
 
                 return result;
             }
-            catch (Exception)
+            catch (Exception x)
             {
-                LogHandler.didGenerateExceptions = true;
+                _logger.LogError("Error reading the database, details: " + x.StackTrace, AppLogEvents.NotRead);
                 throw;
             }
         }
@@ -107,14 +112,18 @@ namespace CalendarsIntegrator.Dependencies.Concretes
             }
             catch(Microsoft.Data.SqlClient.SqlException e)
             {
-                LogHandler.WriteOnLog("The load method from the database generated an exception due to an authentication error, check auth keys on configurationFile.json");
+                _logger.LogError("The load method from the database generated an exception due to an authentication error, check auth keys on configurationFile.json", AppLogEvents.Error);
+                Thread.Sleep(3000);
                 Environment.Exit(0);
             }
+
             catch (Exception e)
+
             {
-                LogHandler.didGenerateExceptions = true;
-                LogHandler.WriteOnLog("The load method from the database generated an exception, details: " + e.StackTrace);
+                _logger.LogError("The load method from the database generated an exception, details: " + e.StackTrace, AppLogEvents.Error);
             }
+
+
             return result;
 
         }
