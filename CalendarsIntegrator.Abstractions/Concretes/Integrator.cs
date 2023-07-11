@@ -35,7 +35,9 @@ namespace CalendarsIntegrator.Core.Concretes
                 try
                 {
                     await sink.Load(_search);
-                } catch (Exception ex)
+                }
+                
+                catch (Exception ex)
                 {
                     Environment.Exit(0);
 
@@ -45,7 +47,7 @@ namespace CalendarsIntegrator.Core.Concretes
 
         }
 
-        private async Task LoadSinks()
+        public async Task LoadSinks()
         {
             foreach (var sink in InputSinks)
             {
@@ -74,11 +76,11 @@ namespace CalendarsIntegrator.Core.Concretes
             }
         }
 
-        private async Task AddUnexisting()
+        public async Task AddUnexisting()
         {
             foreach (var inputSink in InputSinks)
             {
-                foreach (var entry in await inputSink.GetEntries())
+                foreach (var entry in await inputSink.GetEntries()) 
                 {
 
                     foreach (var outputSink in OutputSinks)
@@ -90,7 +92,7 @@ namespace CalendarsIntegrator.Core.Concretes
             }
         }
 
-        private async Task RemoveUnexisting()
+        public async Task RemoveUnexisting()
         {
             foreach (var outputSink in OutputSinks)
             {
@@ -101,9 +103,9 @@ namespace CalendarsIntegrator.Core.Concretes
 
                     foreach (var inputSink in InputSinks)
                     {
-                        if (entry.DbID.Contains(":"))
+                        if (entry.DbID.Contains(':'))
                         {
-                            if (entry.DbID.Contains("HDA_10"))
+                            if (entry.DbID.Substring(entry.DbID.IndexOf(':')+1).Equals(inputSink.sinkId))
                             {
                                 try
                                 {

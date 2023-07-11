@@ -12,7 +12,7 @@ namespace CalendarsIntegrator.Core.Abstracts
     /// </summary>
     public interface ISink
     {
-
+        public string sinkId { get; set; }
         /// <summary>
         /// Load calendar entries
         /// </summary>

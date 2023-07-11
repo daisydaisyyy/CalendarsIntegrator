@@ -14,6 +14,8 @@ namespace CalendarsIntegrator.Sinks
         private IGraphClient graphClient;
         private List<Microsoft365CalendarEntry> allEventsList = new List<Microsoft365CalendarEntry>();
         private readonly ILogger<string> _logger;
+        private string sinkID;
+
 
         public Microsoft365Sink(ILogger<string> logger)
         {
@@ -25,7 +27,11 @@ namespace CalendarsIntegrator.Sinks
 
         }
 
-        
+        public string sinkId
+        {
+            get => sinkID;
+            set => sinkID = value;
+        }
 
 
         public async Task<ExtensionProperty> addExtensions()
@@ -45,10 +51,10 @@ namespace CalendarsIntegrator.Sinks
 
         public async Task Load(ISearch search)
         {
-            // done
-            allEventsList.Clear();
-            try
-            {
+           // done
+           allEventsList.Clear();
+           try
+           {
                 foreach (var email in search.Emails)
                 {
                     var calendars = await graphClient.Client.Users[email].Calendars.GetAsync();
@@ -135,17 +141,14 @@ namespace CalendarsIntegrator.Sinks
             {
                 _logger.LogError("The insert method generated an exception, details: " + e.StackTrace, AppLogEvents.NotCreated);
             }
-        
-
-           
         }
 
         public async Task Delete(ICalendarEntry entry)
         {
-                // done
+            // done
             try
             {
-
+                
                 entry.Email = entry.Email.Equals("USER_MAIL1", StringComparison.InvariantCultureIgnoreCase)
                 ? "ADMIN_TEST_MAIL"
                 : entry.Email;
@@ -153,7 +156,7 @@ namespace CalendarsIntegrator.Sinks
                 entry.Email = entry.Email.Equals("USER_MAIL2", StringComparison.InvariantCultureIgnoreCase)
                 ? "TEST_MAIL"
                 : entry.Email;
-
+                
 
                 // find event in allEventList, get the event id and delete it
 
@@ -163,7 +166,6 @@ namespace CalendarsIntegrator.Sinks
                            e.Start.ToString().Equals(entry.Start.ToString(), StringComparison.Ordinal) &&
                            e.End.ToString().Equals(entry.End.ToString(), StringComparison.Ordinal);
                 });
-
 
                 if (eventToDelete != null)
                 {

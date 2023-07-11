@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CalendarsIntegrator
 {
-    internal class DefaultSearch : ISearch
+    public class DefaultSearch : ISearch
     {
         public DateTime From { get; init; }
         public DateTime To { get; init; }

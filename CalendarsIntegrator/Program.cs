@@ -3,7 +3,6 @@ using CalendarsIntegrator.Core.Abstracts;
 using CalendarsIntegrator.Core.Concretes;
 using CalendarsIntegrator.Sinks;
 using Microsoft.Extensions.Logging;
-using Serilog.Core;
 
 ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
 {
@@ -23,7 +22,7 @@ var search = new DefaultSearch()
     To = new DateTime(2022, 12, 31)
 };
 
-var intergrator = new Integrator(new ISink[] { hdaSink }, new ISink[] { microsoftSink }, search);
-await intergrator.Sync();
+var integrator = new Integrator(new ISink[] { hdaSink }, new ISink[] { microsoftSink }, search);
+await integrator.Sync();
 
 Environment.Exit(0);

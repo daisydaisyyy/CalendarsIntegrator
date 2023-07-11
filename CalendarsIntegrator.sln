@@ -14,6 +14,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Elementi di soluzione", "El
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalendarsIntegratorTests", "CalendarsIntegratorTests\CalendarsIntegratorTests.csproj", "{DDA971F8-823B-4738-98C7-06FFB7D36BFF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalendarsIntegrator.CoreTests", "CalendarsIntegrator.CoreTests\CalendarsIntegrator.CoreTests.csproj", "{4F563C9C-C2AB-4B27-BA4D-6F7E03CB9970}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalendarsIntegrator.Core.Test", "Test\CalendarsIntegrator.Core.Test.csproj", "{C836C4AF-2F80-41B2-8A5F-14BCA4D44D55}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +36,14 @@ Global
 		{DDA971F8-823B-4738-98C7-06FFB7D36BFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDA971F8-823B-4738-98C7-06FFB7D36BFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DDA971F8-823B-4738-98C7-06FFB7D36BFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F563C9C-C2AB-4B27-BA4D-6F7E03CB9970}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F563C9C-C2AB-4B27-BA4D-6F7E03CB9970}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F563C9C-C2AB-4B27-BA4D-6F7E03CB9970}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F563C9C-C2AB-4B27-BA4D-6F7E03CB9970}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C836C4AF-2F80-41B2-8A5F-14BCA4D44D55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C836C4AF-2F80-41B2-8A5F-14BCA4D44D55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C836C4AF-2F80-41B2-8A5F-14BCA4D44D55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C836C4AF-2F80-41B2-8A5F-14BCA4D44D55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -87,7 +87,8 @@ namespace CalendarsIntegrator.Dependencies.Concretes
                 return result;
             }
             catch (Exception ex)
-            {
+                {
+                    _logger.LogError("Error reading the database, details: " + ex.StackTrace, AppLogEvents.NotRead);
                 throw ex;
             }
         }
@@ -106,7 +107,6 @@ namespace CalendarsIntegrator.Dependencies.Concretes
                     }
 
                 }
-
                 
             }
             catch(Microsoft.Data.SqlClient.SqlException e)

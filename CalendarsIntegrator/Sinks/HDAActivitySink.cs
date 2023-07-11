@@ -13,22 +13,24 @@ namespace CalendarsIntegrator.Sinks
         private readonly ILogger<string> _logger;
         private IHDAClient hdaClient;
         private DataTable entriesTable;
-        public string dbID;
-        public HDAActivitySink(string dbID, ILogger<string> logger)
+        private string sinkID;
+
+        public string sinkId
+        {
+            get => sinkID;
+            set => sinkID = value;
+        }
+
+        public HDAActivitySink(string dbId, ILogger<string> logger)
         {
 
-            this.dbID = dbID;
+            sinkId = dbId;
             _logger = logger;
 
             hdaClient = Services.ServiceCollection.GetRequiredService<IHDAClient>();
         }
 
-        public string getDbID
-        {
-            get => dbID;
-            set => dbID = value;
-        }
-
+      
 
 
         public Task Load(ISearch search)
@@ -55,8 +57,8 @@ namespace CalendarsIntegrator.Sinks
 
             foreach (DataRow activity in entriesTable.Rows)
             {
-                entries.Add(new CalendarEntry((DateTime)activity["DataInizio"], (DateTime)activity["DataFine"], (string)activity["EMail"], (string)activity["Subject"], (string)activity["Note"], "", (string)activity["IDProtocollo"]+":"+dbID));
-                _logger.LogInformation("Event read from database, details: Start: " + activity["DataInizio"] + " |End: " + activity["DataFine"] + " |Email: " + activity["EMail"] + " |Subject: " + activity["Subject"] + activity["IDProtocollo"] + ":" + dbID + "| ",AppLogEvents.Read);
+                entries.Add(new CalendarEntry((DateTime)activity["DataInizio"], (DateTime)activity["DataFine"], (string)activity["EMail"], (string)activity["Subject"], (string)activity["Note"], "", (string)activity["IDProtocollo"]+":"+sinkId));
+                _logger.LogInformation("Event read from database, details: Start: " + activity["DataInizio"] + " |End: " + activity["DataFine"] + " |Email: " + activity["EMail"] + " |Subject: " + activity["Subject"] + activity["IDProtocollo"] + ":" + sinkId + "| ",AppLogEvents.Read);
             }
 
             return Task.FromResult((IEnumerable<ICalendarEntry>)entries);
